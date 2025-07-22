@@ -1,0 +1,286 @@
+{
+  "name": "Feedback Management - Store Orders",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "67df99e8-4499-42af-ac3f-b4c457855b4f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1220,
+        -340
+      ],
+      "id": "f00d55de-7023-4291-a0df-e914d7d5467f",
+      "name": "Webhook",
+      "webhookId": "67df99e8-4499-42af-ac3f-b4c457855b4f"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Set Order Details').item.json.body.customer_email }}",
+        "subject": "=Order Confirme: {{ $('Set Order Details').item.json.body.order_id }}",
+        "emailType": "text",
+        "message": "=Hi {{ $('Set Order Details').item.json.body.customer_name }}\n\nThank you for your order!\n\nWe're excited to let you know that we've received your purchase of {{ $('Set Order Details').item.json.body.product }}. Below are the details of your order:\n\n🧾 Order Summary:\n\n    Order ID: {{ $('Set Order Details').item.json.body.order_id }}\n\n    Product: {{ $('Set Order Details').item.json.body.product }}\n\n    Customer Name: {{ $('Set Order Details').item.json.body.customer_name }}\n\n    Email: {{ $('Set Order Details').item.json.body.customer_email }}\n\n    Estimated Delivery Date: ( {{ $('Set Order Details').item.json.body.delivery_date }}) 3-7 business days.\n\nThank you for shopping with us!\n\nWarm regards,\nPremium Digital Products",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -520,
+        -340
+      ],
+      "id": "4c871385-6dfa-4705-a767-6fabb69438b9",
+      "name": "Gmail - Send Confirmation email",
+      "webhookId": "5d97f87a-cdd8-4d49-bb6c-dc7c84b1935b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bfkMwMbuVd9Y9d5H",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "orders",
+          "mode": "list",
+          "cachedResultName": "orders"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "order_id": "={{ $('Set Order Details').item.json.body.order_id }}",
+            "customer_name": "={{ $('Set Order Details').item.json.body.customer_name }}",
+            "customer_email": "={{ $('Set Order Details').item.json.body.customer_email }}",
+            "product": "={{ $('Set Order Details').item.json.body.product }}",
+            "delivery_date": "={{ $('Set Order Details').item.json.body.delivery_date }}",
+            "delivery_status": "={{ $json.body.delivery_status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "order_id",
+              "displayName": "order_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product",
+              "displayName": "product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delivery_date",
+              "displayName": "delivery_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delivery_status",
+              "displayName": "delivery_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -760,
+        -340
+      ],
+      "id": "97556c7b-eacf-4bbd-b672-6d01c1ca2587",
+      "name": "Postgres - Store Order",
+      "credentials": {
+        "postgres": {
+          "id": "9lYKBp6mTwneYiEN",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3709895d-4bb1-444c-a20c-674f316e6bd2",
+              "name": "body.order_id",
+              "value": "={{ $json.body.order_id }}",
+              "type": "string"
+            },
+            {
+              "id": "2e3f7f01-1324-416c-ab49-79164caa1224",
+              "name": "body.customer_name",
+              "value": "={{ $json.body.customer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "41a2db80-c67f-4892-a932-d66d7d60a951",
+              "name": "body.customer_email",
+              "value": "={{ $json.body.customer_email }}",
+              "type": "string"
+            },
+            {
+              "id": "4ce61369-ff62-4aaa-9b66-9451aa382838",
+              "name": "body.product",
+              "value": "={{ $json.body.product }}",
+              "type": "string"
+            },
+            {
+              "id": "56c974a5-cd22-4641-b6a4-fdd69f2b5418",
+              "name": "body.delivery_date",
+              "value": "={{ $json.body.delivery_date }}",
+              "type": "string"
+            },
+            {
+              "id": "df9707bb-8ece-4e11-a524-299a0ba54be4",
+              "name": "body.delivery_status",
+              "value": "={{ $json.body.delivery_status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -980,
+        -340
+      ],
+      "id": "09779104-e496-45a8-ae66-a106aa07c147",
+      "name": "Set Order Details"
+    },
+    {
+      "parameters": {
+        "content": "## Feedback Management - Store Orders",
+        "height": 480,
+        "width": 1160,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1380,
+        -460
+      ],
+      "id": "5d409a49-c47a-47e9-a1ab-4fad7ffb64c5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "...\n* A webhook receives order data (e.g., from Shopify, WooCommerce, or a custom website).\n* Store the order info in database  for future reference.\n* Send a \"Thank you for your order\" email",
+        "height": 140,
+        "width": 700,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -160
+      ],
+      "id": "6c460ad4-c016-4325-82f9-3e041951676a",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Order Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Send Confirmation email": {
+      "main": [
+        []
+      ]
+    },
+    "Set Order Details": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Store Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Store Order": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send Confirmation email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d58c3304-23a4-4f01-9928-f728dde5a6b9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e84d69d57fe6f992415babdeb0ef9149c8d266dbc1f28068ed65ad8aae68949e"
+  },
+  "id": "esP2cJCm9mqE1oj6",
+  "tags": []
+}

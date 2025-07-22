@@ -1,0 +1,398 @@
+{
+  "name": "Feedback Management - Store Feedback",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "We’d love your feedback on your recent purchase!",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name:",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Email:",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Feedback:",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Submit Feedback",
+          "ignoreBots": true
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -820,
+        -380
+      ],
+      "id": "175804e3-d891-4ff2-bd40-7889d75d6949",
+      "name": "On form submission",
+      "webhookId": "a4af00e6-5c7d-4fd5-8e4d-9aa1344c9f38"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        -180
+      ],
+      "id": "5b688eed-43e0-46e8-b573-a48cadc06868",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KljnMheTGQ5qXqzb",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"category\": \"Negative\",\n  \"strength\": 0.8,\n  \"confidence\": 0.9\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -420,
+        -200
+      ],
+      "id": "89c7654f-8124-46e4-a026-eff6e877fe92",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "## Feedback Management - Store Feedback",
+        "height": 740,
+        "width": 1460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        -560
+      ],
+      "id": "1efb5c27-98af-47a5-8696-995dbb04a884",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "...\n* Wait till the customer send a feedback through the sent feedback form.\n* After getting Feedback the settlement analyses is done.\n* If the Feedback is \"Positive\" and \"Neutral\" it store in database.\n* IF the Feedback is \"Negative\" it send the feedback to the corresponding team to review and follow up. and then finally  store in database.",
+        "width": 780,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -20
+      ],
+      "id": "cb2bfd26-ede5-4897-8130-c8b324230bc2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C091EQFK87P",
+          "mode": "list",
+          "cachedResultName": "negative-customer-feedback"
+        },
+        "text": "=🚨 *Negative Feedback Alert!*\n\n*Customer Name:*  {{ $('On form submission').item.json['Name:'] }} \n*Email:* {{ $('On form submission').item.json['Your Email:'] }}\n*Feedback:* \"{{ $('On form submission').item.json['Your Feedback:'] }}\"  \n*Submitted At:* {{ $('On form submission').item.json.submittedAt }}\n*Sentiment:* {{ $json.output.sentiment }} (Strength: {{ $('LLM - Settlement Analyses').item.json.output.sentiment_strength }} Confidence: {{ $('LLM - Settlement Analyses').item.json.output.confidence_score }}%)\n\nPlease review and follow up with the customer accordingly. 💬\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -60,
+        -500
+      ],
+      "id": "ca001863-931d-4c18-9d2a-04a4544b23b7",
+      "name": "Slack - Send to Team",
+      "webhookId": "d402b155-a62f-40ca-afee-8deca65d9c69",
+      "alwaysOutputData": true,
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "yUJayly0mYSOK9As",
+          "name": "Slack account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "customer_feedback",
+          "mode": "list",
+          "cachedResultName": "customer_feedback"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_name": "={{ $('On form submission').item.json['Name:'] }}",
+            "customer_email": "={{ $('On form submission').item.json['Your Email:'] }}",
+            "feedback": "={{ $('On form submission').item.json['Your Feedback:'] }}",
+            "settlement": "={{ $('LLM - Settlement Analyses').item.json.output.sentiment }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback_date",
+              "displayName": "feedback_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "settlement",
+              "displayName": "settlement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        140,
+        -360
+      ],
+      "id": "0775c33a-40d3-4de7-88f9-eae5f2acdf3b",
+      "name": "Postgres - Store Feedback",
+      "credentials": {
+        "postgres": {
+          "id": "9lYKBp6mTwneYiEN",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c9fbdcd3-2a98-40d3-a97c-5f8065bbe528",
+              "leftValue": "={{ $json.output.sentiment }}",
+              "rightValue": "Negative",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -380
+      ],
+      "id": "843d5c8b-e2a9-417f-af5c-5267d5c9b1cc",
+      "name": "Is Negative Feedback?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json[\"Your Feedback:\"] }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an intelligent sentiment analysis engine.\n\nYour task is to analyze the input text and categorize the sentiment as one of the following:\n- \"Positive\"\n- \"Negative\"\n- \"Neutral\"\n\nIn addition to the category, estimate:\n- Sentiment strength: a number between 0.0 (very weak) and 1.0 (very strong)\n- Confidence score: a number between 0.0 and 1.0 representing your confidence in the classification\n\nAlways return the result in this exact JSON format:\n\n\nOnly return the JSON. Do not include any explanations or additional text.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -600,
+        -380
+      ],
+      "id": "666ed040-323a-4362-828e-9c07f97ef575",
+      "name": "LLM - Settlement Analyses"
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Name:": "Henok",
+          "Your Email:": "henokyeshitila22@gmail.com",
+          "Your Feedback:": "bad service",
+          "submittedAt": "2025-06-14T10:38:27.092-04:00",
+          "formMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "LLM - Settlement Analyses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM - Settlement Analyses",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "LLM - Settlement Analyses",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Send to Team": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Store Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Negative Feedback?": {
+      "main": [
+        [
+          {
+            "node": "Slack - Send to Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Postgres - Store Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM - Settlement Analyses": {
+      "main": [
+        [
+          {
+            "node": "Is Negative Feedback?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5137173a-adf2-4ef3-9327-868010bbd6e2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e84d69d57fe6f992415babdeb0ef9149c8d266dbc1f28068ed65ad8aae68949e"
+  },
+  "id": "aSvlyviZ1cOyLP70",
+  "tags": []
+}

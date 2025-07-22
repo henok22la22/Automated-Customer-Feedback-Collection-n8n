@@ -1,0 +1,165 @@
+{
+  "name": "Feedback Management - Send Email",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Feedback Management - Send Email",
+        "height": 500,
+        "width": 1040,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2260,
+        -980
+      ],
+      "id": "36009b0f-bdc7-421b-bd4a-3423bd976e21",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "...\n* The trigger execute in every day to check whether there is order that is \"Delivered\" to customers. \n* After the Delivery, send a follow-up email asking for feedback with a survey link or embedded form.\n* After sending a follow up the \"Feedback Management - Store Feedback\" workflow manage the operation. \n\n",
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        -680
+      ],
+      "id": "f08832fc-9b05-4bf6-85f7-6ef951969562",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2080,
+        -860
+      ],
+      "id": "e4bcbce1-79e1-4d6d-b768-1b79124baf68",
+      "name": "Schedule Trigger - Every Day"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "orders",
+          "mode": "list",
+          "cachedResultName": "orders"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "delivery_status",
+              "value": "delivered"
+            },
+            {
+              "column": "feedback",
+              "value": "FALSE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1800,
+        -860
+      ],
+      "id": "b4cb00b9-44a5-409e-8038-ed2afefd45e4",
+      "name": "Postgres - Check the Delivery Status",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "9lYKBp6mTwneYiEN",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.customer_email }}",
+        "subject": "We’d love your feedback on your recent purchase!",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\" >\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <title>Thank You Email</title>\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      background-color: #f9fafb;\n      color: #333;\n      margin: 0; padding: 0;\n    }\n    .container {\n      max-width: 600px;\n      margin: 30px auto;\n      background: #fff;\n      border-radius: 8px;\n      padding: 30px 40px;\n      box-shadow: 0 4px 15px rgba(0,0,0,0.1);\n    }\n    h1 {\n      color: #4A90E2;\n      margin-bottom: 10px;\n    }\n    p {\n      font-size: 16px;\n      line-height: 1.5;\n      margin-bottom: 20px;\n    }\n    .button {\n      display: inline-block;\n      background: #4A90E2;\n      color: white !important;\n      padding: 14px 28px;\n      border-radius: 30px;\n      text-decoration: none;\n      font-weight: 600;\n      font-size: 16px;\n      transition: background-color 0.3s ease;\n      box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);\n    }\n    .button:hover {\n      background: #357ABD;\n      box-shadow: 0 8px 20px rgba(53, 122, 189, 0.6);\n    }\n    .footer {\n      margin-top: 30px;\n      font-size: 14px;\n      color: #888;\n      text-align: center;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>Hi {{ $json.customer_name }},</h1>\n    <p>Thank you again for purchasing <strong>{{ $json.product }}</strong> from our store!</p>\n    <p>We'd really appreciate it if you could take a minute to share your thoughts. Your feedback helps us improve and serve you better.</p>\n    <p style=\"text-align:center;\">\n      <a href=\"https://n8n-4rx1.onrender.com/form/a4af00e6-5c7d-4fd5-8e4d-9aa1344c9f38\" class=\"button\" target=\"_blank\" rel=\"noopener\">👉 Leave Feedback</a>\n    </p>\n    <p>Warm regards,<br />\n    <strong>Premium Digital Products</strong></p>\n  </div>\n  <div class=\"footer\">\n    &copy; 2025 Premium Digital Products. All rights reserved.\n  </div>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1540,
+        -860
+      ],
+      "id": "9dc82574-bc80-4d39-80e0-8572b479f39d",
+      "name": "Gmail - Send an email",
+      "webhookId": "fcdbb98f-e345-455e-b7f1-f61b6c4ecc27",
+      "alwaysOutputData": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bfkMwMbuVd9Y9d5H",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger - Every Day": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Check the Delivery Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Check the Delivery Status": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send an email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Send an email": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6cd773d2-e870-4ad8-8b8b-4fa789570bbf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e84d69d57fe6f992415babdeb0ef9149c8d266dbc1f28068ed65ad8aae68949e"
+  },
+  "id": "HE5T2miXUiWlsJYO",
+  "tags": []
+}
